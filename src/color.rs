@@ -114,6 +114,51 @@ pub fn window_rect(
     Ok(pixels)
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct HSL {
+    pub h: f32,
+    pub s: f32,
+    pub l: f32
+}
+
+impl HSL {
+    // Source: https://en.wikipedia.org/wiki/HSL_and_HSV#From_RGB
+    pub fn from_rgb(rgb: ARGB) -> HSL {
+        let r: f32 = f32::from(rgb.r) / 255.0;
+        let g: f32 = f32::from(rgb.g) / 255.0;
+        let b: f32 = f32::from(rgb.b) / 255.0;
+        let max = vec![r, g, b].iter().cloned().fold(0.0/0.0, f32::max);
+        let min = vec![r, g, b].iter().cloned().fold(0.0/0.0, f32::min);
+        let mut h: f32 = 0.0;
+        let mut s: f32 = 0.0;
+        let l = ((max + min) / 2.0 * 100.0).round();
+
+        if max != min {
+            let delta = max - min;
+            s = if l > 50.0 {
+                ( delta / (2.0 - max - min) ) * 100.0
+            } else {
+                ( delta / (max + min) ) * 100.0
+            };
+
+            if max == r {
+                h = (g - b) / delta + if g < b { 6.0 } else { 0.0 };
+            } else if max == g {
+                h = (b - r) / delta + 2.0
+            } else if max == b {
+                h = (r - g) / delta + 4.0
+            }
+
+            h = h * 60.0;
+
+            h = h.round();
+            s = s.round();
+        }
+
+        HSL { h, s, l }
+    }
+}
+
 #[test]
 fn test_compaction() {
     assert!(ARGB::new(0xff, 0xff, 0xff, 0xff).is_compactable());
@@ -121,4 +166,25 @@ fn test_compaction() {
     assert!(ARGB::new(0xff, 0x00, 0x00, 0x00).is_compactable());
     assert!(!ARGB::new(0xff, 0xf7, 0xf7, 0xf7).is_compactable());
     assert!(!ARGB::new(0xff, 0xff, 0xf7, 0xff).is_compactable());
+}
+
+#[test]
+fn test_hsl() {
+    let rgb_white = ARGB::new(0xff, 0xff, 0xff, 0xff);
+    assert_eq!{HSL::from_rgb(rgb_white), HSL { h: 0.0, s: 0.0, l: 100.0 }};
+
+    let rgb_red = ARGB::new(0xff, 0xff, 0, 0);
+    assert_eq!{HSL::from_rgb(rgb_red), HSL { h: 0.0, s: 100.0, l: 50.0 }};
+
+    let rgb_green = ARGB::new(0xff, 0, 0xff, 0);
+    assert_eq!{HSL::from_rgb(rgb_green), HSL { h: 120.0, s: 100.0, l: 50.0 }};
+
+    let rgb_blue = ARGB::new(0xff, 0, 0, 0xff);
+    assert_eq!{HSL::from_rgb(rgb_blue), HSL { h: 240.0, s: 100.0, l: 50.0 }};
+
+    let rgb_yellow = ARGB::new(0xff, 0xff, 0xff, 0);
+    assert_eq!{HSL::from_rgb(rgb_yellow), HSL { h: 60.0, s: 100.0, l: 50.0 }};
+
+    let rgb_cyan = ARGB::new(0xff, 14, 115, 123);
+    assert_eq!{HSL::from_rgb(rgb_cyan), HSL { h: 184.0, s: 80.0, l: 27.0 }};
 }

@@ -13,7 +13,7 @@ pub fn get_cli() -> App<'static, 'static> {
                 .takes_value(true)
                 .value_name("NAME")
                 .help("Output format (defaults to hex)")
-                .possible_values(&["hex", "HEX", "hex!", "HEX!", "plain", "rgb"])
+                .possible_values(&["hex", "HEX", "hex!", "HEX!", "plain", "rgb", "hsl"])
                 .conflicts_with("custom"),
         )
         .arg(

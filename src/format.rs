@@ -13,7 +13,7 @@ use nom::IResult;
 
 use anyhow::{anyhow, Error, Result};
 
-use crate::color::ARGB;
+use crate::color::{ ARGB, HSL };
 
 pub struct FormatString(Vec<FormatPart>);
 
@@ -198,6 +198,7 @@ pub enum Format {
     UppercaseHex(HexCompaction),
     Plain,
     RGB,
+    HSL,
 }
 
 impl FromStr for Format {
@@ -210,6 +211,7 @@ impl FromStr for Format {
             "HEX!" => Ok(Format::UppercaseHex(HexCompaction::Compact)),
             "plain" => Ok(Format::Plain),
             "rgb" => Ok(Format::RGB),
+            "hsl" => Ok(Format::HSL),
             _ => Err(anyhow!("Invalid format")),
         }
     }
@@ -234,6 +236,11 @@ impl FormatColor for Format {
             }
             Format::Plain => format!("{};{};{}", color.r, color.g, color.b),
             Format::RGB => format!("rgb({}, {}, {})", color.r, color.g, color.b),
+            Format::HSL => {
+                let hsl = HSL::from_rgb(color);
+
+                format!("hsl({}, {}%, {}%)", hsl.h, hsl.s, hsl.l)
+            },
         }
     }
 }
