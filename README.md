@@ -49,6 +49,7 @@ pacman -S xcolor
 
 Simply invoke the `xcolor` command to select a color. The selected color will be
 printed to the standard output.
+You can cancel the color picker by clicking right click.
 
 ``` text
 xcolor 0.5.0
@@ -91,6 +92,11 @@ default it is set to `8` which indicates an 8x zoom level.
 The `-P` or `--preview-size` flag controls the size of the preview in pixels. So
 that the preview always has a center pixel this number must be odd, if an even
 number is passed then it will be changed to the next odd number.
+
+## Position
+
+The `-p` or `--position` flag allows to also print out the position of the cursor.
+
 
 ## Formatting
 
